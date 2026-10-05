@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Weather App</title>
+
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <div class="container">
+
+        <h1>Weather App</h1>
+
+        <input
+            type="text"
+            id="cityInput"
+            placeholder="Enter city name"
+        >
+
+        <button id="weatherBtn">
+            Get Weather
+        </button>
+
+        <div id="weatherResult"></div>
+
+    </div>
+
+    <script>
+
+        // =========================
+        // 1. VARIABLES
+        // =========================
+
+        const weatherBtn = document.getElementById("weatherBtn");
+        const weatherResult = document.getElementById("weatherResult");
+        const cityInput = document.getElementById("cityInput");
+
+
+        // =========================
+        // 2. FUNCTION
+        // =========================
+
+        function showWeather(weather, city) {
+
+            weatherResult.innerHTML = `
+
+                <h2>${city}</h2>
+
+                <p>
+                    Temperature:
+                    ${weather.current.temperature_2m}
+                    ${weather.current_units.temperature_2m}
+                </p>
+
+                <p>
+                    Humidity:
+                    ${weather.current.relative_humidity_2m}
+                    ${weather.current_units.relative_humidity_2m}
+                </p>
+
+                <p>
+                    Wind:
+                    ${weather.current.wind_speed_10m}
+                    ${weather.current_units.wind_speed_10m}
+                `;
+
+        }
+
+
+        // =========================
+        // 3. EVENT
+        // =========================
+
+        weatherBtn.addEventListener("click", function () {
+
+            const city = cityInput.value;
+
+
+            // =========================
+            // 4. GEOCODING API
+            // =========================
+
+            fetch(
+                "https://geocoding-api.open-meteo.com/v1/search?name="
+                + encodeURIComponent(city)
+            )
+
+                .then(function (response) {
+
+                    return response.json();
+
+                })
+
+
+                // =========================
+                // 5. LOCATION DATA
+                // =========================
+
+                .then(function (data) {
+
+                    console.log(data);
+
+                    const location = data.results[0];
+
+                    const latitude = location.latitude;
+                    const longitude = location.longitude;
+
+
+                    // =========================
+                    // 6. WEATHER API
+                    // =========================
+
+                    return fetch(
+                        "https://api.open-meteo.com/v1/forecast?latitude="
+                        + latitude
+                        + "&longitude="
+                        + longitude
+                        + "&current=temperature_2m,relative_humidity_2m,wind_speed_10m"
+                    );
+
+                })
+
+
+                // =========================
+                // 7. WEATHER JSON
+                // =========================
+
+                .then(function (response) {
+
+                    return response.json();
+
+                })
+
+
+                // =========================
+                // 8. SHOW WEATHER
+                // =========================
+
+                .then(function (weatherData) {
+
+                    console.log(weatherData);
+
+                    showWeather(weatherData, city);
+
+                })
+
+
+                // =========================
+                // 9. ERROR
+                // =========================
+
+                .catch(function (error) {
+
+                    console.log(error);
+
+                    weatherResult.innerHTML =
+                        "<p>Please enter a city name.</p>";
+
+                });
+
+        });
+
+    </script>
+
+</body>
+
+</html>
